@@ -1,0 +1,365 @@
+sippy_openshift=> \d  bug_jobs                         
+                Table "public.bug_jobs"
+   Column    |  Type  | Collation | Nullable | Default 
+-------------+--------+-----------+----------+---------
+ bug_id      | bigint |           | not null | 
+ prow_job_id | bigint |           | not null | 
+Indexes:
+    "bug_jobs_pkey" PRIMARY KEY, btree (bug_id, prow_job_id)
+Foreign-key constraints:
+    "fk_bug_jobs_bug" FOREIGN KEY (bug_id) REFERENCES bugs(id) ON DELETE CASCADE
+    "fk_bug_jobs_prow_job" FOREIGN KEY (prow_job_id) REFERENCES prow_jobs(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  bug_tests                        
+             Table "public.bug_tests"
+ Column  |  Type  | Collation | Nullable | Default 
+---------+--------+-----------+----------+---------
+ bug_id  | bigint |           | not null | 
+ test_id | bigint |           | not null | 
+Indexes:
+    "bug_tests_pkey" PRIMARY KEY, btree (bug_id, test_id)
+Foreign-key constraints:
+    "fk_bug_tests_bug" FOREIGN KEY (bug_id) REFERENCES bugs(id) ON DELETE CASCADE
+    "fk_bug_tests_test" FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  bugs                             
+                                          Table "public.bugs"
+      Column      |           Type           | Collation | Nullable |             Default              
+------------------+--------------------------+-----------+----------+----------------------------------
+ id               | bigint                   |           | not null | nextval('bugs_id_seq'::regclass)
+ created_at       | timestamp with time zone |           |          | 
+ updated_at       | timestamp with time zone |           |          | 
+ deleted_at       | timestamp with time zone |           |          | 
+ status           | text                     |           |          | 
+ last_change_time | timestamp with time zone |           |          | 
+ summary          | text                     |           |          | 
+ target_release   | text                     |           |          | 
+ version          | text                     |           |          | 
+ component        | text                     |           |          | 
+ url              | text                     |           |          | 
+ failure_count    | bigint                   |           |          | 
+ flake_count      | bigint                   |           |          | 
+ fix_versions     | text[]                   |           |          | 
+ affects_versions | text[]                   |           |          | 
+ components       | text[]                   |           |          | 
+ key              | text                     |           |          | 
+ labels           | text[]                   |           |          | 
+Indexes:
+    "bugs_pkey" PRIMARY KEY, btree (id)
+    "idx_bugs_deleted_at" btree (deleted_at)
+    "idx_bugs_key" btree (key)
+Referenced by:
+    TABLE "bug_jobs" CONSTRAINT "fk_bug_jobs_bug" FOREIGN KEY (bug_id) REFERENCES bugs(id) ON DELETE CASCADE
+    TABLE "bug_tests" CONSTRAINT "fk_bug_tests_bug" FOREIGN KEY (bug_id) REFERENCES bugs(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  prow_job_run_prow_pull_requests  
+                                         Table "public.prow_job_run_prow_pull_requests"
+        Column        |  Type  | Collation | Nullable |                                 Default                                  
+----------------------+--------+-----------+----------+--------------------------------------------------------------------------
+ prow_job_run_id      | bigint |           | not null | nextval('prow_job_run_prow_pull_requests_prow_job_run_id_seq'::regclass)
+ prow_pull_request_id | bigint |           | not null | 
+Indexes:
+    "prow_job_run_prow_pull_requests_pkey" PRIMARY KEY, btree (prow_job_run_id, prow_pull_request_id)
+Foreign-key constraints:
+    "fk_prow_job_run_prow_pull_requests_prow_job_run" FOREIGN KEY (prow_job_run_id) REFERENCES prow_job_runs(id) ON DELETE CASCADE
+    "fk_prow_job_run_prow_pull_requests_prow_pull_request" FOREIGN KEY (prow_pull_request_id) REFERENCES prow_pull_requests(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  prow_job_run_test_output_metadata
+                                               Table "public.prow_job_run_test_output_metadata"
+           Column            |           Type           | Collation | Nullable |                            Default                            
+-----------------------------+--------------------------+-----------+----------+---------------------------------------------------------------
+ id                          | bigint                   |           | not null | nextval('prow_job_run_test_output_metadata_id_seq'::regclass)
+ created_at                  | timestamp with time zone |           |          | 
+ updated_at                  | timestamp with time zone |           |          | 
+ deleted_at                  | timestamp with time zone |           |          | 
+ prow_job_run_test_output_id | bigint                   |           |          | 
+ metadata                    | jsonb                    |           |          | 
+Indexes:
+    "prow_job_run_test_output_metadata_pkey" PRIMARY KEY, btree (id)
+    "idx_prow_job_run_test_output_metadata_deleted_at" btree (deleted_at)
+    "idxprow_job_run_test_output_metadataprow_job_run_test_ou7a84182" btree (prow_job_run_test_output_id)
+Foreign-key constraints:
+    "fk_prow_job_run_test_outputs_metadata" FOREIGN KEY (prow_job_run_test_output_id) REFERENCES prow_job_run_test_outputs(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  prow_job_run_test_outputs        
+                                            Table "public.prow_job_run_test_outputs"
+        Column        |           Type           | Collation | Nullable |                        Default                        
+----------------------+--------------------------+-----------+----------+-------------------------------------------------------
+ id                   | bigint                   |           | not null | nextval('prow_job_run_test_outputs_id_seq'::regclass)
+ created_at           | timestamp with time zone |           |          | 
+ updated_at           | timestamp with time zone |           |          | 
+ deleted_at           | timestamp with time zone |           |          | 
+ prow_job_run_test_id | bigint                   |           |          | 
+ output               | text                     |           |          | 
+Indexes:
+    "prow_job_run_test_outputs_pkey" PRIMARY KEY, btree (id)
+    "idx_prow_job_run_test_outputs_deleted_at" btree (deleted_at)
+    "idx_prow_job_run_test_outputs_prow_job_run_test_id" btree (prow_job_run_test_id)
+Foreign-key constraints:
+    "fk_prow_job_run_tests_prow_job_run_test_output" FOREIGN KEY (prow_job_run_test_id) REFERENCES prow_job_run_tests(id) ON DELETE CASCADE
+Referenced by:
+    TABLE "prow_job_run_test_output_metadata" CONSTRAINT "fk_prow_job_run_test_outputs_metadata" FOREIGN KEY (prow_job_run_test_output_id) REFERENCES prow_job_run_test_outputs(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  prow_job_run_tests               
+                                         Table "public.prow_job_run_tests"
+     Column      |           Type           | Collation | Nullable |                    Default                     
+-----------------+--------------------------+-----------+----------+------------------------------------------------
+ id              | bigint                   |           | not null | nextval('prow_job_run_tests_id_seq'::regclass)
+ created_at      | timestamp with time zone |           |          | 
+ updated_at      | timestamp with time zone |           |          | 
+ deleted_at      | timestamp with time zone |           |          | 
+ prow_job_run_id | bigint                   |           |          | 
+ test_id         | bigint                   |           |          | 
+ suite_id        | bigint                   |           |          | 
+ status          | bigint                   |           |          | 
+ duration        | double precision         |           |          | 
+Indexes:
+    "prow_job_run_tests_pkey" PRIMARY KEY, btree (id)
+    "idx_prow_job_run_tests_deleted_at" btree (deleted_at)
+    "idx_prow_job_run_tests_prow_job_run_id" btree (prow_job_run_id)
+    "idx_prow_job_run_tests_status" btree (status)
+    "idx_prow_job_run_tests_suite_id" btree (suite_id)
+    "idx_prow_job_run_tests_test_id" btree (test_id)
+Foreign-key constraints:
+    "fk_prow_job_run_tests_suite" FOREIGN KEY (suite_id) REFERENCES suites(id)
+    "fk_prow_job_run_tests_test" FOREIGN KEY (test_id) REFERENCES tests(id)
+    "fk_prow_job_runs_tests" FOREIGN KEY (prow_job_run_id) REFERENCES prow_job_runs(id) ON DELETE CASCADE
+Referenced by:
+    TABLE "prow_job_run_test_outputs" CONSTRAINT "fk_prow_job_run_tests_prow_job_run_test_output" FOREIGN KEY (prow_job_run_test_id) REFERENCES prow_job_run_tests(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  prow_job_runs                    
+                                             Table "public.prow_job_runs"
+         Column         |           Type           | Collation | Nullable |                  Default                  
+------------------------+--------------------------+-----------+----------+-------------------------------------------
+ id                     | bigint                   |           | not null | nextval('prow_job_runs_id_seq'::regclass)
+ created_at             | timestamp with time zone |           |          | 
+ updated_at             | timestamp with time zone |           |          | 
+ deleted_at             | timestamp with time zone |           |          | 
+ prow_job_id            | bigint                   |           |          | 
+ url                    | text                     |           |          | 
+ test_failures          | bigint                   |           |          | 
+ failed                 | boolean                  |           |          | 
+ infrastructure_failure | boolean                  |           |          | 
+ known_failure          | boolean                  |           |          | 
+ succeeded              | boolean                  |           |          | 
+ timestamp              | timestamp with time zone |           |          | 
+ overall_result         | text                     |           |          | 
+ duration               | bigint                   |           |          | 
+ cluster                | text                     |           |          | 
+Indexes:
+    "prow_job_runs_pkey" PRIMARY KEY, btree (id)
+    "idx_prow_job_runs_deleted_at" btree (deleted_at)
+    "idx_prow_job_runs_overall_result" btree (overall_result)
+    "idx_prow_job_runs_prow_job_id" btree (prow_job_id)
+    "idx_prow_job_runs_timestamp" btree ("timestamp")
+    "idx_prow_job_runs_timestamp_date" btree (date(("timestamp" AT TIME ZONE 'UTC'::text)))
+Foreign-key constraints:
+    "fk_prow_jobs_job_runs" FOREIGN KEY (prow_job_id) REFERENCES prow_jobs(id) ON DELETE CASCADE
+Referenced by:
+    TABLE "prow_job_run_prow_pull_requests" CONSTRAINT "fk_prow_job_run_prow_pull_requests_prow_job_run" FOREIGN KEY (prow_job_run_id) REFERENCES prow_job_runs(id) ON DELETE CASCADE
+    TABLE "prow_job_run_tests" CONSTRAINT "fk_prow_job_runs_tests" FOREIGN KEY (prow_job_run_id) REFERENCES prow_job_runs(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  prow_jobs                        
+                                        Table "public.prow_jobs"
+    Column     |           Type           | Collation | Nullable |                Default                
+---------------+--------------------------+-----------+----------+---------------------------------------
+ id            | bigint                   |           | not null | nextval('prow_jobs_id_seq'::regclass)
+ created_at    | timestamp with time zone |           |          | 
+ updated_at    | timestamp with time zone |           |          | 
+ deleted_at    | timestamp with time zone |           |          | 
+ name          | text                     |           |          | 
+ release       | text                     |           |          | 
+ variants      | text[]                   |           |          | 
+ test_grid_url | text                     |           |          | 
+ kind          | text                     |           |          | 
+Indexes:
+    "prow_jobs_pkey" PRIMARY KEY, btree (id)
+    "idx_prow_jobs_deleted_at" btree (deleted_at)
+    "idx_prow_jobs_variants" btree (variants)
+    "prow_jobs_name_key" UNIQUE CONSTRAINT, btree (name)
+Referenced by:
+    TABLE "bug_jobs" CONSTRAINT "fk_bug_jobs_prow_job" FOREIGN KEY (prow_job_id) REFERENCES prow_jobs(id) ON DELETE CASCADE
+    TABLE "prow_job_runs" CONSTRAINT "fk_prow_jobs_job_runs" FOREIGN KEY (prow_job_id) REFERENCES prow_jobs(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  prow_pull_requests               
+                                       Table "public.prow_pull_requests"
+   Column   |           Type           | Collation | Nullable |                    Default                     
+------------+--------------------------+-----------+----------+------------------------------------------------
+ id         | bigint                   |           | not null | nextval('prow_pull_requests_id_seq'::regclass)
+ created_at | timestamp with time zone |           |          | 
+ updated_at | timestamp with time zone |           |          | 
+ deleted_at | timestamp with time zone |           |          | 
+ org        | text                     |           |          | 
+ repo       | text                     |           |          | 
+ number     | bigint                   |           |          | 
+ author     | text                     |           |          | 
+ title      | text                     |           |          | 
+ sha        | text                     |           |          | 
+ link       | text                     |           |          | 
+ merged_at  | timestamp with time zone |           |          | 
+Indexes:
+    "prow_pull_requests_pkey" PRIMARY KEY, btree (id)
+    "idx_prow_pull_requests_deleted_at" btree (deleted_at)
+    "pr_link_sha" UNIQUE, btree (sha, link)
+Referenced by:
+    TABLE "prow_job_run_prow_pull_requests" CONSTRAINT "fk_prow_job_run_prow_pull_requests_prow_pull_request" FOREIGN KEY (prow_pull_request_id) REFERENCES prow_pull_requests(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  pull_request_comments            
+                        Table "public.pull_request_comments"
+         Column          |           Type           | Collation | Nullable | Default 
+-------------------------+--------------------------+-----------+----------+---------
+ created_at              | timestamp with time zone |           |          | 
+ updated_at              | timestamp with time zone |           |          | 
+ pull_number             | bigint                   |           | not null | 
+ comment_type            | smallint                 |           | not null | 
+ sha                     | text                     |           | not null | 
+ org                     | text                     |           | not null | 
+ repo                    | text                     |           | not null | 
+ prow_job_root           | text                     |           |          | 
+ failed_comment_attempts | bigint                   |           |          | 
+ last_comment_attempt    | timestamp with time zone |           |          | 
+Indexes:
+    "pull_request_comments_pkey" PRIMARY KEY, btree (pull_number, comment_type, sha, org, repo)
+
+sippy_openshift=> \d  release_job_runs                 
+                                                Table "public.release_job_runs"
+            Column            |           Type           | Collation | Nullable |                   Default                    
+------------------------------+--------------------------+-----------+----------+----------------------------------------------
+ id                           | bigint                   |           | not null | nextval('release_job_runs_id_seq'::regclass)
+ created_at                   | timestamp with time zone |           |          | 
+ updated_at                   | timestamp with time zone |           |          | 
+ deleted_at                   | timestamp with time zone |           |          | 
+ release_tag_id               | bigint                   |           |          | 
+ prow_job_run_id              | bigint                   |           |          | 
+ job_name                     | text                     |           |          | 
+ kind                         | text                     |           |          | 
+ state                        | text                     |           |          | 
+ transition_time              | timestamp with time zone |           |          | 
+ retries                      | bigint                   |           |          | 
+ url                          | text                     |           |          | 
+ upgrades_from                | text                     |           |          | 
+ upgrades_to                  | text                     |           |          | 
+ upgrade                      | boolean                  |           |          | 
+ prow_job_run_id,index:unique | bigint                   |           |          | 
+Indexes:
+    "release_job_runs_pkey" PRIMARY KEY, btree (id)
+    "idx_release_job_runs_deleted_at" btree (deleted_at)
+    "idx_release_job_runs_name" UNIQUE, btree (prow_job_run_id)
+Foreign-key constraints:
+    "fk_release_tags_job_runs" FOREIGN KEY (release_tag_id) REFERENCES release_tags(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  release_pull_requests            
+                                         Table "public.release_pull_requests"
+     Column      |           Type           | Collation | Nullable |                      Default                      
+-----------------+--------------------------+-----------+----------+---------------------------------------------------
+ id              | bigint                   |           | not null | nextval('release_pull_requests_id_seq'::regclass)
+ created_at      | timestamp with time zone |           |          | 
+ updated_at      | timestamp with time zone |           |          | 
+ deleted_at      | timestamp with time zone |           |          | 
+ url             | text                     |           |          | 
+ pull_request_id | text                     |           |          | 
+ name            | text                     |           |          | 
+ description     | text                     |           |          | 
+ bug_url         | text                     |           |          | 
+Indexes:
+    "release_pull_requests_pkey" PRIMARY KEY, btree (id)
+    "idx_release_pull_requests_deleted_at" btree (deleted_at)
+    "pr_url_name" UNIQUE, btree (url, name)
+Referenced by:
+    TABLE "release_tag_pull_requests" CONSTRAINT "fk_release_tag_pull_requests_release_pull_request" FOREIGN KEY (release_pull_request_id) REFERENCES release_pull_requests(id)
+
+sippy_openshift=> \d  release_repositories             
+                                         Table "public.release_repositories"
+     Column      |           Type           | Collation | Nullable |                     Default                      
+-----------------+--------------------------+-----------+----------+--------------------------------------------------
+ id              | bigint                   |           | not null | nextval('release_repositories_id_seq'::regclass)
+ created_at      | timestamp with time zone |           |          | 
+ updated_at      | timestamp with time zone |           |          | 
+ deleted_at      | timestamp with time zone |           |          | 
+ name            | text                     |           |          | 
+ release_tag_id  | bigint                   |           |          | 
+ repository_head | text                     |           |          | 
+ diff_url        | text                     |           |          | 
+Indexes:
+    "release_repositories_pkey" PRIMARY KEY, btree (id)
+    "idx_release_repositories_deleted_at" btree (deleted_at)
+Foreign-key constraints:
+    "fk_release_tags_repositories" FOREIGN KEY (release_tag_id) REFERENCES release_tags(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  release_tag_pull_requests        
+             Table "public.release_tag_pull_requests"
+         Column          |  Type  | Collation | Nullable | Default 
+-------------------------+--------+-----------+----------+---------
+ release_tag_id          | bigint |           | not null | 
+ release_pull_request_id | bigint |           | not null | 
+Indexes:
+    "release_tag_pull_requests_pkey" PRIMARY KEY, btree (release_tag_id, release_pull_request_id)
+Foreign-key constraints:
+    "fk_release_tag_pull_requests_release_pull_request" FOREIGN KEY (release_pull_request_id) REFERENCES release_pull_requests(id)
+    "fk_release_tag_pull_requests_release_tag" FOREIGN KEY (release_tag_id) REFERENCES release_tags(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  release_tags                     
+                                            Table "public.release_tags"
+        Column        |           Type           | Collation | Nullable |                 Default                  
+----------------------+--------------------------+-----------+----------+------------------------------------------
+ id                   | bigint                   |           | not null | nextval('release_tags_id_seq'::regclass)
+ created_at           | timestamp with time zone |           |          | 
+ updated_at           | timestamp with time zone |           |          | 
+ deleted_at           | timestamp with time zone |           |          | 
+ release_tag          | text                     |           |          | 
+ release              | text                     |           |          | 
+ stream               | text                     |           |          | 
+ architecture         | text                     |           |          | 
+ phase                | text                     |           |          | 
+ release_time         | timestamp with time zone |           |          | 
+ previous_release_tag | text                     |           |          | 
+ kubernetes_version   | text                     |           |          | 
+ current_os_version   | text                     |           |          | 
+ previous_os_version  | text                     |           |          | 
+ current_os_url       | text                     |           |          | 
+ previous_os_url      | text                     |           |          | 
+ os_diff_url          | text                     |           |          | 
+ forced               | boolean                  |           |          | 
+ reject_reason        | text                     |           |          | 
+ reject_reason_note   | text                     |           |          | 
+Indexes:
+    "release_tags_pkey" PRIMARY KEY, btree (id)
+    "idx_release_tags_deleted_at" btree (deleted_at)
+Referenced by:
+    TABLE "release_tag_pull_requests" CONSTRAINT "fk_release_tag_pull_requests_release_tag" FOREIGN KEY (release_tag_id) REFERENCES release_tags(id) ON DELETE CASCADE
+    TABLE "release_job_runs" CONSTRAINT "fk_release_tags_job_runs" FOREIGN KEY (release_tag_id) REFERENCES release_tags(id) ON DELETE CASCADE
+    TABLE "release_repositories" CONSTRAINT "fk_release_tags_repositories" FOREIGN KEY (release_tag_id) REFERENCES release_tags(id) ON DELETE CASCADE
+
+sippy_openshift=> \d  suites                           
+                                       Table "public.suites"
+   Column   |           Type           | Collation | Nullable |              Default               
+------------+--------------------------+-----------+----------+------------------------------------
+ id         | bigint                   |           | not null | nextval('suites_id_seq'::regclass)
+ created_at | timestamp with time zone |           |          | 
+ updated_at | timestamp with time zone |           |          | 
+ deleted_at | timestamp with time zone |           |          | 
+ name       | text                     |           |          | 
+Indexes:
+    "suites_pkey" PRIMARY KEY, btree (id)
+    "idx_suites_deleted_at" btree (deleted_at)
+    "idx_suites_name" UNIQUE, btree (name)
+Referenced by:
+    TABLE "prow_job_run_tests" CONSTRAINT "fk_prow_job_run_tests_suite" FOREIGN KEY (suite_id) REFERENCES suites(id)
+
+sippy_openshift=> \d  tests                            
+                                       Table "public.tests"
+   Column   |           Type           | Collation | Nullable |              Default              
+------------+--------------------------+-----------+----------+-----------------------------------
+ id         | bigint                   |           | not null | nextval('tests_id_seq'::regclass)
+ created_at | timestamp with time zone |           |          | 
+ updated_at | timestamp with time zone |           |          | 
+ deleted_at | timestamp with time zone |           |          | 
+ name       | text                     |           |          | 
+ watchlist  | boolean                  |           |          | 
+Indexes:
+    "tests_pkey" PRIMARY KEY, btree (id)
+    "idx_tests_deleted_at" btree (deleted_at)
+    "idx_tests_name" UNIQUE, btree (name)
+Referenced by:
+    TABLE "bug_tests" CONSTRAINT "fk_bug_tests_test" FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE
+    TABLE "prow_job_run_tests" CONSTRAINT "fk_prow_job_run_tests_test" FOREIGN KEY (test_id) REFERENCES tests(id)
